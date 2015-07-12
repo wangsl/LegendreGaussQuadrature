@@ -1,0 +1,48 @@
+
+BeginPackage["LegendreGauss`"]
+
+MyLG::usage = " ";
+
+Begin["`private`"]
+
+L[k_, r_, x_, n_] := 
+    Module[{s, l},
+	   s = Product[(x - r[[l]])/(r[[k]] - r[[l]]), {l, Drop[Table[l, {l, 1, n}], {k}]}];
+	   Return[s];
+	  ]
+    
+$MinPrecision = 150;
+$MaxExtraPrecision = 1024000;
+
+m = 1000;
+c = Table[0, {i, 1, m}, {j,1,m}];
+Q = Table[0, {i, 1, m}]; 
+
+X[n_] := If[EvenQ[n], 2/(1+ n), 0];
+
+MyLG[n_] := 
+    Module[{R, W, x, i, alpha, res},
+	   
+	   Print["***** ", n, " *****"];
+	   
+	   R = x /. NSolve[LegendreP[n,x] == 0, x, WorkingPrecision->500];
+	   
+	   W = Table[0, {i, 1, n}];
+	   For[i = 1, i <= n, i++,
+	       alpha = CoefficientList[L[i, R, x, n], x]; 
+	       W[[i]] = Sum[alpha[[l]] X[l-1], {l, 1, n}];
+	       
+	       res = LegendreP[n,x] /.x->R[[i]]; 
+	       
+	       Print[{NumberForm[R[[i]], {40, 32}, ExponentFunction->(Null &)], 
+		      NumberForm[W[[i]], {40, 32}, ExponentFunction->(Null &)],
+		      NumberForm[res, {10,4}, NumberFormat -> (Row[{#1, "E", #3}] &)]
+		     }];
+	      ];
+	  ];
+
+
+End[]
+
+EndPackage[]
+    
